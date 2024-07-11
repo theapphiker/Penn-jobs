@@ -32,7 +32,7 @@ def main():
     # change email below as needed
     load_dotenv()
     email = os.getenv('EMAIL_ADDRESS')
-    ezgmail.send(email, "PSU Jobs", results_text)
+    ezgmail.send(email, "Penn Jobs", results_text)
 
 def get_html(job_search):
     """
@@ -68,19 +68,22 @@ def parse_html(html):
     """
     results = []
     soup = BeautifulSoup(html, "html5lib")
-    for e in soup.find('div', class_="search-results-grid-container").select('tr'):
-        temp_results = []
-        if "data-job-id" in str(e):
-            temp_results.append((e.select("a")[0].getText()))
-            temp_results.append(
-                "https://www.governmentjobs.com" + e.find("a").get("href")
-            )
-        if "job-table-posted" in str(e):
-            if e.find("td",class_="job-table-posted hidden-sm hidden-xs"):
-                temp_results.append("Posted: " + e.find("td",class_="job-table-posted hidden-sm hidden-xs").get_text())
-            if e.find("td",class_="job-table-closing"):
-                temp_results.append("Closing: " + e.find("td",class_="job-table-closing").get_text())
-        results.append(temp_results)
+    if soup.find('div', class_="search-results-grid-container") is None:
+        results.append([])
+    else:
+        for e in soup.find('div', class_="search-results-grid-container").select('tr'):
+            temp_results = []
+            if "data-job-id" in str(e):
+                temp_results.append((e.select("a")[0].getText()))
+                temp_results.append(
+                    "https://www.governmentjobs.com" + e.find("a").get("href")
+                )
+            if "job-table-posted" in str(e):
+                if e.find("td",class_="job-table-posted hidden-sm hidden-xs"):
+                    temp_results.append("Posted: " + e.find("td",class_="job-table-posted hidden-sm hidden-xs").get_text())
+                if e.find("td",class_="job-table-closing"):
+                    temp_results.append("Closing: " + e.find("td",class_="job-table-closing").get_text())
+            results.append(temp_results)
     return results
 
 
@@ -98,12 +101,15 @@ def write_jobs_text(results_dict):
     for k in results_dict.keys():
         results_text += k.upper() + " JOBS"
         results_text += "\n"
-        for v in results_dict[k]:
-            if v != []:
-                for value in v:
-                    results_text += value
+        if results_dict[k] == [[]]:
+            results_text += "No jobs found."
+        else:
+            for v in results_dict[k]:
+                if v != []:
+                    for value in v:
+                        results_text += value
+                        results_text += "\n"
                     results_text += "\n"
-                results_text += "\n"
     results_text += "\n"
     return results_text
 
