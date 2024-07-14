@@ -103,6 +103,8 @@ def write_jobs_text(results_dict):
         results_text += "\n"
         if results_dict[k] == [[]]:
             results_text += "No jobs found."
+            results_text += "\n"
+            results_text += "\n"
         else:
             for v in results_dict[k]:
                 if v != []:
