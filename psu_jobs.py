@@ -24,17 +24,21 @@ def main():
     """
     results_dict = {}
 
+    print("Getting jobs...")
     for job_search in JOB_LINKS:
         html = get_html(job_search)
         jobs = parse_html(html)
         results_dict[job_search.replace("%20","_").split("=")[1]] = jobs
 
+
+    print("Writing email with jobs...")
     results_text = write_jobs_text(results_dict)
 
     # change email in .env file as needed
     load_dotenv()
     email = os.getenv('EMAIL_ADDRESS')
     ezgmail.send(email, "PSU Jobs", results_text)
+    print("Email sent!")
 
 def get_html(job_search):
     """
