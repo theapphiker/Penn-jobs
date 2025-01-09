@@ -7,7 +7,6 @@ Collection of scripts that scrape Pennsylvania-based jobs of interest based on k
 <ul>
 <li>bs4</li>
 <li>selenium</li>
-<li>time</li>
 <li>ezgmail</li>
 </ul>
 
