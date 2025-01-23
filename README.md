@@ -7,6 +7,8 @@ Collection of scripts that scrape Pennsylvania-based jobs of interest based on k
 <ul>
 <li>bs4</li>
 <li>selenium</li>
+<li>python-dotenv</li>
+<li>html5lib</li>
 </ul>
 
 If you have PIP installed, type: `pip install -r requirements.txt` from the command line and your system should install all required modules.
