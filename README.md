@@ -7,15 +7,13 @@ Collection of scripts that scrape Pennsylvania-based jobs of interest based on k
 <ul>
 <li>bs4</li>
 <li>selenium</li>
-<li>ezgmail</li>
 </ul>
 
 If you have PIP installed, type: `pip install -r requirements.txt` from the command line and your system should install all required modules.
 
-<b>EZGmail</b>
+<b>Sending Emails using Python</b>
 
-Please read Al Sweigart's <a href='https://github.com/asweigart/ezgmail'>documentation and instructions</a> for setting up EZGmail to allow your Python script to access a Gmail account.
-The user must save their email address in a .env file with the variable name "EMAIL_ADDRESS".
+GeeksforGeeks has <a href='https://www.geeksforgeeks.org/send-mail-gmail-account-using-python/'>instructions</a> for sending emails using SMTP (Simple Mail Transfer Protocol). I store the sender, receiver, and sender password in a .env file on my system that the script accesses.
 
 <b>Firefox</b>
 

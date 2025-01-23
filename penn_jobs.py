@@ -4,9 +4,10 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from bs4 import BeautifulSoup
 from time import sleep
-import ezgmail
 import os
 from dotenv import load_dotenv
+import smtplib
+from datetime import date
 
 # add more searches to this list as needed
 JOB_LINKS = [
@@ -28,13 +29,25 @@ def main():
         jobs = parse_html(html)
         results_dict[job_search.replace("%20","_").split("=")[1]] = jobs
 
+    # adding text for email
     print("Writing email with jobs...")
     results_text = write_jobs_text(results_dict)
 
-    # change email below as needed
+    # adding job search information and current date
+    today = date.today()
+    formatted_date = today.strftime("%m/%d/%Y")
+    results_text = "Penn Government Jobs for " + formatted_date + "\n\n" + results_text
+
+    # change email in .env file as needed
     load_dotenv()
-    email = os.getenv('EMAIL_ADDRESS')
-    ezgmail.send(email, "Penn Jobs", results_text)
+    sender_email = os.getenv('SENDER_EMAIL_ADDRESS')
+    receiver_email = os.getenv('RECEIVER_EMAIL_ADDRESS')
+    pw = os.getenv('APP_PASSWORD')
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login(sender_email, pw)
+    s.sendmail(sender_email, receiver_email, results_text)
+    s.quit()
     print("Email sent!")
 
 def get_html(job_search):
