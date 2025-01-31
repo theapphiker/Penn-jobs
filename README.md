@@ -15,7 +15,7 @@ If you have PIP installed, type: `pip install -r requirements.txt` from the comm
 
 <b>Sending Emails using Python</b>
 
-GeeksforGeeks has <a href='https://www.geeksforgeeks.org/send-mail-gmail-account-using-python/'>instructions</a> for sending emails using SMTP (Simple Mail Transfer Protocol). I store the sender, receiver, and sender password in a .env file on my system that the script accesses.
+GeeksforGeeks has <a href='https://www.geeksforgeeks.org/send-mail-gmail-account-using-python/'>instructions</a> for sending emails using SMTP (Simple Mail Transfer Protocol). I store the sender, receiver, and sender password in a .env file on my system that the script accesses. This is by no means secure or best practice, but works for this purpose on my local system.
 
 <b>Firefox</b>
 
