@@ -13,7 +13,8 @@ from datetime import date
 JOB_LINKS = [
     "https://www.governmentjobs.com/careers/pabureau?keywords=intelligence",
     "https://www.governmentjobs.com/careers/pabureau?keywords=investigator",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=python"
+    "https://www.governmentjobs.com/careers/pabureau?keywords=python",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=sql"
 ]
 
 def main():
