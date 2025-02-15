@@ -15,7 +15,8 @@ JOB_LINKS = [
     "https://www.governmentjobs.com/careers/pabureau?keywords=intelligence",
     "https://www.governmentjobs.com/careers/pabureau?keywords=investigator",
     "https://www.governmentjobs.com/careers/pabureau?keywords=python",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=sql"
+    "https://www.governmentjobs.com/careers/pabureau?keywords=sql",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=analyst"
 ]
 
 RESULTS_DICT = {}
@@ -97,6 +98,7 @@ def get_html(job_search):
     sleep(5) # sleep for 5 seconds to allow time for the JavaScript to load
     inner_html = browser.execute_script("return document.body.innerHTML")
     jobs = parse_html(inner_html)
+    browser.quit()
     return jobs
 
 

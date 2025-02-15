@@ -95,6 +95,7 @@ def get_html(job_search):
     sleep(5) # sleep for 5 seconds to allow time for the JavaScript to load
     inner_html = browser.execute_script("return document.body.innerHTML")
     jobs = parse_html(inner_html)
+    browser.quit()
     return jobs
 
 
