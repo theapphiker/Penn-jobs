@@ -8,39 +8,33 @@ import os
 from dotenv import load_dotenv
 import smtplib
 from datetime import date
-import threading
-
-# add more searches to this list as needed
-JOB_LINKS = [
-    "https://www.governmentjobs.com/careers/pabureau?keywords=intelligence",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=investigator",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=python",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=sql",
-    "https://www.governmentjobs.com/careers/pabureau?keywords=analyst"
-]
-
-RESULTS_DICT = {}
-LOCK = threading.Lock()
+from multiprocessing import Pool
+from multiprocessing import Manager
 
 def main():
     """
     Scrapes jobs of interest from Pennylvania government job search website and then emails the jobs to my Gmail account.
     
     """
-
+    # add more searches to this list as needed
+    job_links = [
+    "https://www.governmentjobs.com/careers/pabureau?keywords=intelligence",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=investigator",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=python",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=sql",
+    "https://www.governmentjobs.com/careers/pabureau?keywords=analyst"
+]
     print("Getting jobs...")
-    threads = []
-    for job_search in JOB_LINKS:
-        thread = threading.Thread(target = write_to_dict, args = (job_search,))
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()  # Wait for all threads to complete
+    with Manager() as manager:
+        d = manager.dict()
+        lock = manager.Lock()
+        with Pool(processes=6) as pool:
+            pool.starmap(write_to_dict,[(d, job, lock) for job in job_links])
+        new_d = dict(d)
 
     # adding text for email
     print("Writing email with jobs...")
-    results_text = write_jobs_text(RESULTS_DICT)
+    results_text = write_jobs_text(new_d)
 
     # adding job search information and current date
     today = date.today()
@@ -59,24 +53,26 @@ def main():
     s.quit()
     print("Email sent!")
 
-def write_to_dict(search):
+def write_to_dict(the_dict, search, lock):
     """
     Writes the HTML content retrieved for a given search query to a global dictionary.
 
     This function fetches the HTML content associated with a search query using `get_html()`,
-    processes the query to create a key, and stores the HTML content in the `RESULTS_DICT` dictionary.
-    The function uses a lock (`LOCK`) to ensure thread-safe access to the shared dictionary.
+    processes the query to create a key, and stores the HTML content in the the_dict dictionary.
+    The function uses a lock to ensure thread-safe access to the shared dictionary.
 
     Args:
     search: The search query string.  This string is expected to be a URL or URL-encoded string
     from which a key will be extracted.
 
     Returns:
-    None.  This function modifies the global `RESULTS_DICT` in place.
+    None.  This function modifies the_dict in place.
     """
     results = get_html(search)
-    with LOCK:
-        RESULTS_DICT[search.replace("%20","_").split("=")[1]] = results
+    the_key = search.replace("%20","_").split("=")[1]
+    with lock:
+        the_dict[the_key] = results
+
 
 
 def get_html(job_search):
