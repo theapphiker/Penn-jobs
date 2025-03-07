@@ -19,7 +19,7 @@ def main():
     
     """
     # add more searches to this list as needed
-    JOB_LINKS = [
+    job_links = [
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=secret",
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=risk",
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=data%20analyst",
@@ -51,7 +51,7 @@ def main():
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login(sender_email, pw)
-    s.sendmail(sender_email, receiver_email, results_text)
+    s.sendmail(sender_email, receiver_email, str(results_text).encode('utf-8'))
     s.quit()
     print("Email sent!")
 
