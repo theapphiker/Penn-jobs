@@ -8,8 +8,7 @@ import os
 from dotenv import load_dotenv
 import smtplib
 from datetime import date
-from multiprocessing import Manager
-from multiprocessing import Pool
+import threading
 
 
 
@@ -19,24 +18,28 @@ def main():
     
     """
     # add more searches to this list as needed
-    JOB_LINKS = [
+    job_links = [
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=secret",
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=risk",
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=data%20analyst",
         "https://psu.wd1.myworkdayjobs.com/PSU_Staff?q=python",
         "https://psu.wd1.myworkdayjobs.com/en-US/PSU_Staff?q=ARL"
     ]
+    results_dict = {}
+    lock = threading.Lock()
 
     print("Getting jobs...")
-    with Manager() as manager:
-        d = manager.dict()
-        lock = manager.Lock()
-        with Pool(processes=6) as pool:
-            pool.starmap(write_to_dict,[(d, job, lock) for job in job_links])
-        new_d = dict(d)
+    threads = []
+    for job_search in job_links:
+         thread = threading.Thread(target = write_to_dict, args = (results_dict, job_search, lock))
+         threads.append(thread)
+         thread.start()
+
+    for thread in threads:
+         thread.join()  # Wait for all threads to complete
 
     print("Writing email with jobs...")
-    results_text = write_jobs_text(new_d)
+    results_text = write_jobs_text(results_dict)
 
    # adding job search information and current date
     today = date.today()
@@ -51,7 +54,7 @@ def main():
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login(sender_email, pw)
-    s.sendmail(sender_email, receiver_email, results_text)
+    s.sendmail(sender_email, receiver_email, str(results_text).encode('utf-8'))
     s.quit()
     print("Email sent!")
 
@@ -93,8 +96,8 @@ def get_html(job_search):
     browser.get(job_search)
     sleep(5) # sleep for 5 seconds to allow time for the JavaScript to load
     inner_html = browser.execute_script("return document.body.innerHTML")
-    jobs = parse_html(inner_html)
     browser.quit()
+    jobs = parse_html(inner_html)
     return jobs
 
 

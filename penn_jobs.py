@@ -8,8 +8,7 @@ import os
 from dotenv import load_dotenv
 import smtplib
 from datetime import date
-from multiprocessing import Pool
-from multiprocessing import Manager
+import threading
 
 def main():
     """
@@ -24,17 +23,22 @@ def main():
     "https://www.governmentjobs.com/careers/pabureau?keywords=sql",
     "https://www.governmentjobs.com/careers/pabureau?keywords=analyst"
 ]
+    results_dict = {}
+    lock = threading.Lock()
+
     print("Getting jobs...")
-    with Manager() as manager:
-        d = manager.dict()
-        lock = manager.Lock()
-        with Pool(processes=6) as pool:
-            pool.starmap(write_to_dict,[(d, job, lock) for job in job_links])
-        new_d = dict(d)
+    threads = []
+    for job_search in job_links:
+         thread = threading.Thread(target = write_to_dict, args = (results_dict, job_search, lock))
+         threads.append(thread)
+         thread.start()
+
+    for thread in threads:
+         thread.join()  # Wait for all threads to complete
 
     # adding text for email
     print("Writing email with jobs...")
-    results_text = write_jobs_text(new_d)
+    results_text = write_jobs_text(results_dict)
 
     # adding job search information and current date
     today = date.today()
@@ -49,7 +53,7 @@ def main():
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login(sender_email, pw)
-    s.sendmail(sender_email, receiver_email, results_text)
+    s.sendmail(sender_email, receiver_email, str(results_text).encode('utf-8'))
     s.quit()
     print("Email sent!")
 
@@ -69,34 +73,31 @@ def write_to_dict(the_dict, search, lock):
     None.  This function modifies the_dict in place.
     """
     results = get_html(search)
-    the_key = search.replace("%20","_").split("=")[1]
     with lock:
-        the_dict[the_key] = results
-
+        the_dict[search.replace("%20","_").split("=")[1]] = results
 
 
 def get_html(job_search):
-    """
-    Fetches the HTML content of a provided Pennylvania government job search URL using a headless Firefox browser.
-
-    Args:
-    job_search (str): The URL of the Pennylvania government job search.
-
-    Returns:
-    str: The inner HTML content of the retrieved webpage.
-    """
-    options = Options()
-    options.add_argument(
-        "--headless"
-    )  # prevents Firefox browser from obviously opening
-    browser = webdriver.Firefox(options=options)
-    browser.get(job_search)
-    sleep(5) # sleep for 5 seconds to allow time for the JavaScript to load
-    inner_html = browser.execute_script("return document.body.innerHTML")
-    jobs = parse_html(inner_html)
-    browser.quit()
-    return jobs
-
+     """
+     Fetches the HTML content of a provided Pennylvania government job search URL using a headless Firefox browser.
+ 
+     Args:
+     job_search (str): The URL of the Pennylvania government job search.
+ 
+     Returns:
+     str: The inner HTML content of the retrieved webpage.
+     """
+     options = Options()
+     options.add_argument(
+         "--headless"
+     )  # prevents Firefox browser from obviously opening
+     browser = webdriver.Firefox(options=options)
+     browser.get(job_search)
+     sleep(5) # sleep for 5 seconds to allow time for the JavaScript to load
+     inner_html = browser.execute_script("return document.body.innerHTML")
+     browser.quit()
+     jobs = parse_html(inner_html)
+     return jobs
 
 def parse_html(html):
     """
