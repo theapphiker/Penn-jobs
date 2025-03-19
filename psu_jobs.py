@@ -60,11 +60,11 @@ def main():
 
 def write_to_dict(the_dict, search, lock):
     """
-    Writes the HTML content retrieved for a given search query to a global dictionary.
+    Writes the HTML content retrieved for a given search query to a dictionary.
 
     This function fetches the HTML content associated with a search query using `get_html()`,
     processes the query to create a key, and stores the HTML content in the the_dict dictionary.
-    The function uses a lock (`LOCK`) to ensure thread-safe access to the shared dictionary.
+    The function uses a lock to ensure thread-safe access to the shared dictionary.
 
     Args:
     search: The search query string.  This string is expected to be a URL or URL-encoded string

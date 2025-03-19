@@ -59,7 +59,7 @@ def main():
 
 def write_to_dict(the_dict, search, lock):
     """
-    Writes the HTML content retrieved for a given search query to a global dictionary.
+    Writes the HTML content retrieved for a given search query to a dictionary.
 
     This function fetches the HTML content associated with a search query using `get_html()`,
     processes the query to create a key, and stores the HTML content in the the_dict dictionary.
@@ -73,8 +73,9 @@ def write_to_dict(the_dict, search, lock):
     None.  This function modifies the_dict in place.
     """
     results = get_html(search)
+    the_key = search.replace("%20","_").split("=")[1]
     with lock:
-        the_dict[search.replace("%20","_").split("=")[1]] = results
+        the_dict[the_key] = results
 
 
 def get_html(job_search):
