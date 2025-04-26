@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 import smtplib
 from datetime import date
-import threading
+import concurrent.futures
 
 def main():
     """
@@ -24,17 +24,12 @@ def main():
     "https://www.governmentjobs.com/careers/pabureau?keywords=analyst"
 ]
     results_dict = {}
-    lock = threading.Lock()
 
     print("Getting jobs...")
-    threads = []
-    for job_search in job_links:
-         thread = threading.Thread(target = write_to_dict, args = (results_dict, job_search, lock))
-         threads.append(thread)
-         thread.start()
-
-    for thread in threads:
-         thread.join()  # Wait for all threads to complete
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_url = {executor.submit(get_html, url): url for url in job_links}
+        for future in concurrent.futures.as_completed(future_to_url):
+            results_dict[future_to_url[future].replace("%20","_").split("=")[1]] = future.result()
 
     # adding text for email
     print("Writing email with jobs...")
@@ -56,27 +51,6 @@ def main():
     s.sendmail(sender_email, receiver_email, str(results_text).encode('utf-8'))
     s.quit()
     print("Email sent!")
-
-def write_to_dict(the_dict, search, lock):
-    """
-    Writes the HTML content retrieved for a given search query to a dictionary.
-
-    This function fetches the HTML content associated with a search query using `get_html()`,
-    processes the query to create a key, and stores the HTML content in the the_dict dictionary.
-    The function uses a lock to ensure thread-safe access to the shared dictionary.
-
-    Args:
-    search: The search query string.  This string is expected to be a URL or URL-encoded string
-    from which a key will be extracted.
-
-    Returns:
-    None.  This function modifies the_dict in place.
-    """
-    results = get_html(search)
-    the_key = search.replace("%20","_").split("=")[1]
-    with lock:
-        the_dict[the_key] = results
-
 
 def get_html(job_search):
      """
